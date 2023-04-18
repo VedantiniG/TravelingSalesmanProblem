@@ -2,6 +2,8 @@ package main.java.edu.neu.coe.info6205;
 
 import main.java.edu.neu.coe.info6205.model.City;
 import main.java.edu.neu.coe.info6205.model.Edge;
+import main.java.edu.neu.coe.info6205.solver.AntColonySolver;
+import main.java.edu.neu.coe.info6205.solver.SimulatedAnnealingSolver;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -107,6 +109,25 @@ public class TSPSolution {
 
         double tspSolution = getSolution(circuit, cities);
         System.out.println("TSP Solution: " + tspSolution);
+        
+        
+        //Simulated Annealing
+        SimulatedAnnealingSolver sim = new SimulatedAnnealingSolver(cities.size(), distMatrix);
+        List<Integer> edges =  sim.solve();
+        System.out.println("Simulation circuit: " + edges + edges.size());
+        double simWeight = getSolution(edges, cities);
+        System.out.println("Simulated Annealing Solution: " + simWeight);
+        
+        //Ant Colony
+        AntColonySolver ant = new AntColonySolver(cities.size(), distMatrix);
+        List<Integer> antEdges =  ant.solve();
+        System.out.println("AntColony circuit: " + antEdges + antEdges.size());
+        double antWeight = getSolution(antEdges, cities);
+        System.out.println("Ant Colony  Solution: " + antWeight);
+        
+        System.out.println("-----------Done-------------");
+        
+
 
     }
 
