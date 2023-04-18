@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static main.java.edu.neu.coe.info6205.solver.ChristofidesSolver.*;
+import static main.java.edu.neu.coe.info6205.solver.ThreeOptSolver.threeOpt;
 import static main.java.edu.neu.coe.info6205.solver.TwoOptSolver.twoOpt;
 import static main.java.edu.neu.coe.info6205.util.CircuitUtil.circuitLength;
 
@@ -50,6 +51,11 @@ public class TSPSolution {
         System.out.print("\n");
         System.out.println("2-opt Solution: " + twoOptSolution);
 
+        List<Integer> threeOptCircuit = threeOpt(hCircuit, distMatrix, cities.size());
+
+        double threeOptSolution = circuitLength(cities.size(), distMatrix, threeOptCircuit);
+        System.out.print("\n");
+        System.out.println("3-opt Solution: " + threeOptSolution);
 
         //Simulated Annealing
         SimulatedAnnealingSolver sim = new SimulatedAnnealingSolver(cities.size(), distMatrix);
