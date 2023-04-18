@@ -12,7 +12,7 @@ public class TSPVisualSwing extends JFrame {
 
     private Tour bestTour;
 
-    public TSPVisualizationSwing() {
+    public TSPVisualSwing() {
         super("TSP Christofides");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
