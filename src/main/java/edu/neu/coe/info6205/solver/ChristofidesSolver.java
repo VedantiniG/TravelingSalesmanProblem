@@ -1,6 +1,7 @@
 package main.java.edu.neu.coe.info6205.solver;
 
 import main.java.edu.neu.coe.info6205.model.City;
+import main.java.edu.neu.coe.info6205.model.DisjointSet;
 import main.java.edu.neu.coe.info6205.model.Edge;
 
 import java.util.*;
@@ -28,169 +29,160 @@ public class ChristofidesSolver {
     }
 
     // using Prim's algo to construct minimum spanning tree
-    public static List<Edge> primsAlgoMST(List<City> cities) {
+    public static List<Edge> primsAlgoMST(int numberOfCities, double[][] distMatrix) {
 
-        int numberOfCities = cities.size();
-        int[] parent = new int[numberOfCities];
-        double[] key = new double[numberOfCities];
-        boolean[] mstSet = new boolean[numberOfCities];
+        List<Edge> edges = new ArrayList<>();
 
-        Arrays.fill(key, Double.POSITIVE_INFINITY);
-
-        PriorityQueue<Edge> priorityQueue = new PriorityQueue<>();
-        priorityQueue.offer(new Edge(-1, 0, 0));
-        key[0] = 0;
-        parent[0] = -1;
-
-        while (!priorityQueue.isEmpty()) {
-            Edge edge = priorityQueue.poll();
-            int x = edge.getDestination();
-
-            if (mstSet[x]) continue;
-
-            mstSet[x] = true;
-            for (int y = 0; y < numberOfCities; y++) {
-                double weight = distanceCalculator(cities.get(x), cities.get(y));
-                if (!mstSet[y] && weight < key[y]) {
-                    key[y] = weight;
-                    priorityQueue.offer(new Edge(x, y, weight));
-                    parent[y] = x;
-                }
+        for (int i = 0; i < numberOfCities; i++) {
+            for (int j = i + 1; j < numberOfCities; j++) {
+                edges.add(new Edge(i, j, distMatrix[i][j]));
             }
         }
 
+        Collections.sort(edges);
+        DisjointSet disjointSet = new DisjointSet(numberOfCities);
         List<Edge> mst = new ArrayList<>();
-        double addition = 0;
-        for (int x = 1; x < numberOfCities; x++) {
-            int y = parent[x];
-            double weight = distanceCalculator(cities.get(x), cities.get(y));
-            mst.add(new Edge(x, y, weight));
-            addition += weight;
+        for (Edge e : edges) {
+            if (disjointSet.find(e.getSource()) != disjointSet.find(e.getDestination())) {
+                disjointSet.union(e.getSource(), e.getDestination());
+                mst.add(e);
+            }
         }
-        System.out.println("MST ======================================================== " + addition);
         return mst;
     }
 
-    public static List<Edge> matching(double[][] weightMatrix, List<Integer> oVertices) {
-        List<Edge> matching = new ArrayList<>();
-        int n = oVertices.size();
-        boolean[] visited = new boolean[n];
-        int[] parent = new int[n];
-        double[] distance = new double[n];
-
-        for (int i = 0; i < n - 1; i++) {
-            int y = -1;
-            for (int j = 0; j < n; j++) {
-                if (!visited[j] && (y == -1 || distance[j] < distance[y])) {
-                    y = j;
-                }
-            }
-            visited[y] = true;
-            for (int x = 0; x < n; x++) {
-                if (weightMatrix[oVertices.get(x)][oVertices.get(y)] < distance[x]) {
-                    distance[x] = weightMatrix[oVertices.get(x)][oVertices.get(y)];
-                    parent[x] = y;
-                }
-            }
+    public static double getLengthOfMst (List<Edge> mst) {
+        double len = 0;
+        for (Edge e : mst) {
+            len += e.getWt();
         }
 
-        for (int i = 0; i < n; i++) {
-            if (parent[i] != i) {
-                int x = oVertices.get(i);
-                int y = oVertices.get(parent[i]);
-                double wt = weightMatrix[x][y];
-                matching.add(new Edge(x, y, wt));
-            }
-        }
-        return matching;
+        return len;
     }
 
-    public static List<Edge> mstAndMatching(List<Edge> mst, List<Edge> matching) {
-        List<Edge> combined = new ArrayList<>(mst);
-        for (Edge edge : matching) {
-            int x = edge.getSource();
-            int y = edge.getDestination();
-            boolean contains = false;
-            for (Edge edge1 : combined) {
-                if ((edge1.getSource() == x && edge1.getDestination() == y) || (edge1.getSource() == y && edge1.getDestination() == x)) {
-                    contains = true;
-                    break;
-                }
-            }
-            if (!contains) {
-                combined.add(edge);
+    public static List<Integer> findingOddVertices (int numberOfCities, List<Edge> mst) {
+        int [] degree = new int[numberOfCities];
+
+        for (Edge e : mst) {
+            degree[e.getSource()] ++;
+            degree[e.getDestination()] ++;
+        }
+
+        List<Integer> oVertices = new ArrayList<>();
+
+        for (int i = 0; i < numberOfCities; i++) {
+            if (degree[i] % 2 == 1) {
+                oVertices.add(i);
             }
         }
-        return combined;
+
+        return oVertices;
     }
 
-    public static List<Integer> eulerianCircuit(List<Edge> edges) {
+    public static List<Edge> matching(int numberOfCities, double[][] distMatrix, List<Integer> oVertices) {
+        List<Edge> edges = new ArrayList<>();
+        for (int i = 0; i < oVertices.size(); i++) {
+            for (int j = i + 1; j < oVertices.size(); j ++) {
+               int x = oVertices.get(i);
+               int y = oVertices.get(j);
+               edges.add(new Edge(x, y, distMatrix[x][y]));
+            }
+        }
 
-        // building adjacency matrix to represent multi graph
-        Map<Integer, List<Integer>> adjacencyList = new HashMap<>();
+        Collections.sort(edges);
+        DisjointSet disjointSet = new DisjointSet(numberOfCities);
+        List<Edge> match = new ArrayList<>();
         for (Edge edge : edges) {
-            int x = edge.getSource();
-            int y = edge.getDestination();
-            adjacencyList.computeIfAbsent(x, k -> new ArrayList<>()).add(y);
-            adjacencyList.computeIfAbsent(y, k -> new ArrayList<>()).add(x);
-        }
-
-        // initializing a stack and circuit list
-        Stack<Integer> stack = new Stack<>();
-        List<Integer> circuit = new ArrayList<>();
-
-        // starting at random point and adding it to stack
-        int start = edges.get(0).getSource();
-        stack.push(start);
-
-        while (!stack.isEmpty()) {
-            int z = stack.peek();
-
-            // add one to stack if current point has neighbours
-            if (adjacencyList.containsKey(z) && !adjacencyList.get(z).isEmpty()) {
-                int u = adjacencyList.get(z).get(0);
-                stack.push(u);
-                adjacencyList.get(z).remove(Integer.valueOf(u));
-                adjacencyList.get(u).remove(Integer.valueOf(z));
-            } else {
-                // current point is part of circuit if no neighbours present
-                circuit.add(stack.pop());
+            if (disjointSet.find(edge.getSource()) != disjointSet.find(edge.getDestination())) {
+                disjointSet.union(edge.getSource(), edge.getDestination());
+                match.add(edge);
             }
         }
+        return match;
+    }
 
-        // Reverse the circuit
-        Collections.reverse(circuit);
+    public static List<Edge> eulerianCircuit(int numberOfCities, List<Edge> mst, List<Edge> match) {
+        List<Edge>[] multiGraph = new List[numberOfCities];
+
+        for (int i = 0; i < numberOfCities; i ++) {
+            multiGraph[i] = new ArrayList<>();
+        }
+
+        for (Edge e : mst) {
+            multiGraph[e.getSource()].add(e);
+            multiGraph[e.getDestination()].add(e);
+        }
+
+        for (Edge e: match) {
+            multiGraph[e.getSource()].add(e);
+            multiGraph[e.getDestination()].add(e);
+        }
+
+        boolean[] visits = new boolean[numberOfCities];
+
+        List<Edge> circuit = new ArrayList<>();
+        eulerianCircuitHelper(multiGraph, 0, circuit, visits);
+
         return circuit;
     }
 
-    public static List<Integer> hamiltonianCircuit(List<Integer> circuit) {
+    public static List<Integer> hamiltonianCircuit(int numberOfCities, List<Edge> eCircuit) {
 
-        List<Integer> hCircuit = new ArrayList<>();
-        Set<Integer> visited = new HashSet<>();
+        int[] position = new int[numberOfCities];
 
-        for (int point : circuit) {
-            if (!visited.contains(point)) {
-                hCircuit.add(point);
-                visited.add(point);
+        for (int i = 0; i < eCircuit.size(); i++) {
+            Edge e = eCircuit.get(i);
+            position[e.getSource()] = i;
+            position[e.getDestination()] = i;
+        }
+
+        boolean[] visits = new boolean[numberOfCities];
+        List<Integer> circuit = new ArrayList<>();
+
+        for (Edge edge : eCircuit) {
+            if (!visits[edge.getSource()]) {
+                circuit.add(edge.getSource());
+                visits[edge.getSource()] = true;
+            }
+            if (!visits[edge.getDestination()]) {
+                circuit.add(edge.getDestination());
+                visits[edge.getDestination()] = true;
+            }
+            if (circuit.size() == numberOfCities) {
+                break;
             }
         }
+
+        int i = 0;
+
+        while (circuit.get(i) != 0) {
+            i++;
+        }
+
+        List<Integer> hCircuit = new ArrayList<>();
+
+        for (int j = i; j < circuit.size(); j++) {
+            hCircuit.add(circuit.get(j));
+        }
+
+        for (int j = 1; j < i; j++) {
+            hCircuit.add(circuit.get(j));
+        }
+
+        hCircuit.add(0);
 
         return hCircuit;
     }
 
-    public static double getSolution(List<Integer> circuit, List<City> cities) {
-        double totalCost = 0.0;
-
-        for (int i = 0; i < circuit.size() - 1; i++) {
-            int x = circuit.get(i);
-            int y = circuit.get(i + 1);
-            totalCost += distanceCalculator(cities.get(x), cities.get(y));
+    private static void eulerianCircuitHelper(List<Edge>[] multiGraph, int num, List<Edge> circuit, boolean[] visits) {
+        visits[num] = true;
+        for (Edge e : multiGraph[num]) {
+            int x = e.getSource() == num ? e.getDestination() : e.getSource();
+            if (!visits[x]) {
+                circuit.add(e);
+                eulerianCircuitHelper(multiGraph, x, circuit, visits);
+            }
         }
-
-        // adding cost to go back to start city
-        int fCity = circuit.get(0);
-        int lCity = circuit.get(circuit.size() - 1);
-        totalCost += distanceCalculator(cities.get(lCity), cities.get(fCity));
-        return totalCost;
     }
+
 }
