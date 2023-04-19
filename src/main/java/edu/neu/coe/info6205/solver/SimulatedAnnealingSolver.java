@@ -1,117 +1,68 @@
 package main.java.edu.neu.coe.info6205.solver;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-
 import main.java.edu.neu.coe.info6205.model.City;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SimulatedAnnealingSolver {
+    public static List<Integer> simulatedAnnealing(List<Integer> circuit, double[][] distMatrix, List<City> cities) {
 
-    private int numCities; // Number of cities
-    private double[][] distanceMatrix; // Distance matrix for cities
-    private static final double INITIAL_TEMPERATURE = 10000; // Initial temperature for simulated annealing
-    private static final double COOLING_RATE = 0.003; // Cooling rate for simulated annealing
-    private static final int NUM_ITERATIONS_PER_TEMP = 100; // Number of iterations per temperature for simulated annealing
+        double circuitLength = circuitLength(cities.size(), distMatrix, circuit);
+        double temp = 500.0;
+        double coolingRate = 0.001;
+        int iterations = 1000;
 
-    public SimulatedAnnealingSolver(int numCities, double[][] distanceMatrix) {
-        this.numCities = numCities;
-        this.distanceMatrix = distanceMatrix;
-    }
+        for (int i = 0; i < iterations; i++) {
 
-    /**
-     * Method to solve the TSP using Simulated Annealing algorithm.
-     *
-     * @return List of integers representing the order of cities in the solution
-     */
-    public List<Integer> solve() {
-        List<Integer> currentSolution = generateRandomSolution(); // Generate a random initial solution
-        double currentEnergy = calculateEnergy(currentSolution); // Calculate energy (total distance) of current solution
-        double temperature = INITIAL_TEMPERATURE; // Initialize temperature
+            List<Integer> newCircuit = TwoOptSolver.twoOpt(circuit, cities);
+            int newCircuitLength = circuitLength(cities.size(), distMatrix, newCircuit);
 
-        while (temperature > 1) {
-            for (int i = 0; i < NUM_ITERATIONS_PER_TEMP; i++) {
-                List<Integer> newSolution = generateNeighborSolution(currentSolution); // Generate a neighboring solution
-                double newEnergy = calculateEnergy(newSolution); // Calculate energy of new solution
+            if (newCircuitLength < circuitLength) {
 
-                // Decide whether to accept the new solution based on energy difference and temperature
-                if (acceptSolution(currentEnergy, newEnergy, temperature)) {
-                    currentSolution = newSolution; // Update current solution
-                    currentEnergy = newEnergy; // Update current energy
+                circuit = newCircuit;
+                circuitLength = newCircuitLength;
+
+            } else {
+
+                double acceptanceProbability = acceptanceProbability(circuitLength, newCircuitLength, temp);
+
+                if (Math.random() < acceptanceProbability) {
+
+                    circuit = newCircuit;
+                    circuitLength = newCircuitLength;
+
                 }
+
             }
-            temperature *= (1 - COOLING_RATE); // Cool down temperature
+
+            temp *= (1 - coolingRate);
         }
 
-        return currentSolution;
+        return circuit;
     }
 
-    /**
-     * Method to generate a random initial solution.
-     *
-     * @return List of integers representing the order of cities in the solution
-     */
-    private List<Integer> generateRandomSolution() {
-        List<Integer> solution = new ArrayList<>();
-        for (int i = 0; i < numCities; i++) {
-            solution.add(i);
+    public static int circuitLength(int numberOfCities, double[][] distMatrix, List<Integer> circuit) {
+
+        int len = 0;
+
+        for (int i = 0; i < numberOfCities - 1; i++) {
+
+            len += distMatrix[circuit.get(i)][circuit.get(i+1)];
+
         }
-        java.util.Collections.shuffle(solution); // Shuffle the list to generate a random solution
-        return solution;
+
+        len += distMatrix[circuit.get(numberOfCities-1)][circuit.get(0)];
+
+        return len;
     }
 
-    /**
-     * Method to generate a neighboring solution by swapping two random cities.
-     *
-     * @param solution Current solution
-     * @return List of integers representing the order of cities in the neighboring solution
-     */
-    private List<Integer> generateNeighborSolution(List<Integer> solution) {
-        List<Integer> newSolution = new ArrayList<>(solution);
-        int index1 = (int) (Math.random() * numCities); // Randomly select index of first city
-        int index2 = (int) (Math.random() * numCities); // Randomly select index of second city
-        while (index2 == index1) {
-            index2 = (int) (Math.random() * numCities); // Make sure index2 is different from index1
+    // Calculate acceptance probability for simulated annealing
+    public static double acceptanceProbability(double energy, double newEnergy, double temperature) {
+
+        if (newEnergy < energy) {
+            return 1.0;
         }
-        // Swap the two cities to generate a neighboring solution
-        int temp = newSolution.get(index1);
-        newSolution.set(index1, newSolution.get(index2));
-        newSolution.set(index2, temp);
-        return newSolution;
-    }
 
-    
-    private double calculateEnergy(List<Integer> solution) {
-    double energy = 0;
-    for (int i = 0; i < numCities - 1; i++) {
-        int city1 = solution.get(i);
-        int city2 = solution.get(i + 1);
-        energy += distanceMatrix[city1][city2]; // Add distance between consecutive cities
+        return Math.exp((energy - newEnergy) / temperature);
     }
-    int lastCity = solution.get(numCities - 1);
-    int firstCity = solution.get(0);
-    energy += distanceMatrix[lastCity][firstCity]; // Add distance between last and first city to complete the loop
-    return energy;
-}
-
-/**
- * Method to accept or reject a new solution based on energy difference and temperature.
- *
- * @param currentEnergy Current energy (total distance) of the current solution
- * @param newEnergy     Energy (total distance) of the new solution
- * @param temperature   Current temperature
- * @return true if the new solution is accepted, false otherwise
- */
-private boolean acceptSolution(double currentEnergy, double newEnergy, double temperature) {
-    if (newEnergy < currentEnergy) {
-        return true; // Accept the new solution if it has lower energy (shorter distance)
-    } else {
-        double acceptanceProbability = Math.exp((currentEnergy - newEnergy) / temperature);
-        return Math.random() < acceptanceProbability; // Accept the new solution with a certain probability
-    }
-}
 }

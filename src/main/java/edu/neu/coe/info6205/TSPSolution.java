@@ -2,8 +2,6 @@ package main.java.edu.neu.coe.info6205;
 
 import main.java.edu.neu.coe.info6205.model.City;
 import main.java.edu.neu.coe.info6205.model.Edge;
-import main.java.edu.neu.coe.info6205.solver.AntColonySolver;
-import main.java.edu.neu.coe.info6205.solver.SimulatedAnnealingSolver;
 import main.java.edu.neu.coe.info6205.util.CircuitUtil;
 
 import java.io.BufferedReader;
@@ -13,8 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static main.java.edu.neu.coe.info6205.solver.ChristofidesSolver.*;
-import static main.java.edu.neu.coe.info6205.solver.ThreeOptSolver.threeOpt;
-import static main.java.edu.neu.coe.info6205.solver.TwoOptSolver.twoOpt;
+import static main.java.edu.neu.coe.info6205.solver.SimulatedAnnealingSolver.simulatedAnnealing;
 import static main.java.edu.neu.coe.info6205.util.CircuitUtil.circuitLength;
 
 public class TSPSolution {
@@ -47,6 +44,10 @@ public class TSPSolution {
         System.out.print("Minimum Spanning Tree Length: " + getLengthOfMst(mst));
 
         CircuitUtil.displayCircuit(cities, distMatrix, hCircuit);
+
+        List<Integer> edges =  simulatedAnnealing(hCircuit, distMatrix, cities);
+        double simWeight = circuitLength(cities.size(), distMatrix, edges);
+        System.out.println("\nSimulated Annealing Solution: " + simWeight);
 
 
         System.out.println("");
