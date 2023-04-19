@@ -85,7 +85,7 @@ public class TSPSolution {
                 String[] cols = l.split(split);
 
                 // create new city and add to list
-                cities.add(new City(cols[0], Double.parseDouble(cols[1]), Double.parseDouble(cols[2])));
+                cities.add(new City(cols[0], Double.parseDouble(cols[2]), Double.parseDouble(cols[1])));
             }
 
         } catch (IOException e) {
