@@ -170,7 +170,7 @@ public class AntColonySolver {
         }
     }
 
-    private double calculateTourLength(List<Integer> tour) {
+    public double calculateTourLength(List<Integer> tour) {
         double tourLength = 0.0;
         for (int i = 0; i < numCities - 1; i++) {
             int city1 = tour.get(i);
