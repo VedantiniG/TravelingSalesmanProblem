@@ -69,18 +69,21 @@ public class CircuitUtil {
         JButton twoOptButton = new JButton("Two-Opt");
         JButton threeOptButton = new JButton("Three-Opt");
         JButton simulatedButton = new JButton("Simulated Annealing");
+        JButton antColony = new JButton("Ant Colony");
+
         buttonPanel.add(twoOptButton);
         buttonPanel.add(threeOptButton);
         buttonPanel.add(simulatedButton);
+        buttonPanel.add(antColony);
         frame.getContentPane().add(buttonPanel, BorderLayout.EAST);
 
         twoOptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("////////////Two-Opt//////////////");
+                System.out.println("----------------Two-Opt----------------");
                 List<Integer> twoOptTour = TwoOptSolver.twoOpt(circuit, cities);
                 double twoOptTourLength = CircuitUtil.circuitLength(n, distMatrix, twoOptTour);
-                System.out.println("Optimized tour length: " + twoOptTourLength);
+                System.out.println("Optimized Circuit length: " + twoOptTourLength);
                 displayCircuit(cities, distMatrix, twoOptTour);
             }
         });
@@ -88,10 +91,10 @@ public class CircuitUtil {
         threeOptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("////////////Three-Opt//////////////");
+                System.out.println("----------------Three-Opt----------------");
                 List<Integer> threeOptCircuit = ThreeOptSolver.threeOpt(circuit, distMatrix, cities.size());
                 double threeOptCircuitLength = CircuitUtil.circuitLength(n, distMatrix, threeOptCircuit);
-                System.out.println("Optimized tour length: " + threeOptCircuitLength);
+                System.out.println("Optimized Circuit length: " + threeOptCircuitLength);
                 displayCircuit(cities, distMatrix, threeOptCircuit);
             }
         });
@@ -99,11 +102,24 @@ public class CircuitUtil {
         simulatedButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("////////////Simulated Anealing//////////////");
+                System.out.println("----------------Simulated Anealing----------------");
                 //  List<Integer> simulatedCircuit = SimulatedAnnealingSolver.solve(n, dist, tour);
                 //  double simulatedCircuitLength = CircuitUtil.circuitLength(n, dist, simulatedCircuit);
                 //  System.out.println("Optimized tour length: " + simulatedCircuitLength);
                 //  displayTour(cities, dist, simulatedCircuit);
+            }
+        });
+
+        antColony.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("----------------Three-Opt----------------");
+                
+                AntColonySolver antColony = new AntColonySolver(n, distMatrix);
+                List<Integer> antColonyCircuit = antColony.solve();
+                double antColonyCircuitLength = CircuitUtil.circuitLength(n, distMatrix, antColonyCircuit);
+                System.out.println("Optimized Circuit length: " + antColonyCircuitLength);
+                displayCircuit(cities, distMatrix, antColonyCircuit);
             }
         });
 

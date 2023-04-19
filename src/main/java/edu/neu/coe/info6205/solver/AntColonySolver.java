@@ -95,7 +95,7 @@ public class AntColonySolver {
             int currentCity = tour.get(tour.size() - 1);
             int nextCity = selectNextCity(currentCity, visited);
             tour.add(nextCity);
-            visited[nextCity] = true;
+            visited[nextCity] = true; 
         }
 
         return tour;

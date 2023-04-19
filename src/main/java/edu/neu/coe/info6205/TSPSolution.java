@@ -4,6 +4,7 @@ import main.java.edu.neu.coe.info6205.model.City;
 import main.java.edu.neu.coe.info6205.model.Edge;
 import main.java.edu.neu.coe.info6205.solver.AntColonySolver;
 import main.java.edu.neu.coe.info6205.solver.SimulatedAnnealingSolver;
+import main.java.edu.neu.coe.info6205.util.CircuitUtil;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -45,33 +46,13 @@ public class TSPSolution {
         System.out.println("Circuit length: " + circuitLength(cities.size(), distMatrix, hCircuit));
         System.out.print("Minimum Spanning Tree Length: " + getLengthOfMst(mst));
 
-        List<Integer> twoOptCircuit = twoOpt(hCircuit, cities);
+        CircuitUtil.displayCircuit(cities, distMatrix, hCircuit);
 
-        double twoOptSolution = circuitLength(cities.size(), distMatrix, twoOptCircuit);
-        System.out.print("\n");
-        System.out.println("2-opt Solution: " + twoOptSolution);
 
-        List<Integer> threeOptCircuit = threeOpt(hCircuit, distMatrix, cities.size());
-
-        double threeOptSolution = circuitLength(cities.size(), distMatrix, threeOptCircuit);
-        System.out.print("\n");
-        System.out.println("3-opt Solution: " + threeOptSolution);
-
-        //Simulated Annealing
-        SimulatedAnnealingSolver sim = new SimulatedAnnealingSolver(cities.size(), distMatrix);
-        List<Integer> edges =  sim.solve();
-//        System.out.println("Simulation circuit: " + edges + edges.size());
-        double simWeight = circuitLength(cities.size(), distMatrix, edges);
-        System.out.println("Simulated Annealing Solution: " + simWeight);
-
-        //Ant Colony
-        AntColonySolver ant = new AntColonySolver(cities.size(), distMatrix);
-        List<Integer> antEdges =  ant.solve();
-//        System.out.println("AntColony circuit: " + antEdges + antEdges.size());
-        double antWeight = circuitLength(cities.size(), distMatrix, antEdges);
-        System.out.println("Ant Colony  Solution: " + antWeight);
-
+        System.out.println("");
         System.out.println("-----------Done-------------");
+        System.out.println("");
+
 
     }
 
